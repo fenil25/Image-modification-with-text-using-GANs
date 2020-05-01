@@ -3,6 +3,20 @@
         <head>
                 <meta charset="utf-8">
                 <title>Minimal Django File Upload Example</title>
+                <script type="text/javascript">
+
+        function upload_img(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    document.getElementById('img_id').src = e.target.result;
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+</script>
         </head>
 
         <body>
@@ -16,17 +30,18 @@
                                 {{ form.original.errors }}
                                 {{ form.original }}
                         </p>
+                        <img id = 'img_id' src='#' alt="your image" />
                         <p>{{ form.desc }}</p>
                         <p><input type="submit" value="Upload" /></p>
                 </form>
 
                 {% if last_edit %}
                         <ul>
-                                <li><a href="{{ last_edit.original.url }}">{{ last_edit.original.name }}
+                                <li><a href="{% url 'transform_old' id=last_edit.id side='original' %}">{{ last_edit.original.name }}
                                 <img src="{{ last_edit.original.url }}" alt="{{ last_edit.original.name }}">
                                 </a></li>
                                 <li>{{ last_edit.desc }}</li>
-                                <li><a href="{{ last_edit.result.url }}">{{ last_edit.result.name }}
+                                <li><a href="{% url 'transform_old' id=last_edit.id side='result' %}">{{ last_edit.result.name }}
                                 <img src="{{ last_edit.result.url }}" alt="{{ last_edit.result.name }}">
                                 </a></li>
                         </ul>

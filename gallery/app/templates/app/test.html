@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript">
+        function upload_img(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    document.getElementById('img_id').src = e.target.result;
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+	</script>
+	<title></title>
+</head>
+<body>
+    <form id="form_img">
+        <input type='file' onchange="upload_img(this);" />
+        <img id="img_id" src="#" alt="your image" />
+    </form>
+</body>
+</html>
