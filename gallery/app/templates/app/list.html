@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+        <head>
+                <meta charset="utf-8">
+                <title>Minimal Django File Upload Example</title>
+        </head>
+
+        <body>
+                <!-- List of uploaded documents -->
+                {% if pairs %}
+                        <ul>
+                        {% for pair in pairs %}
+                                <li><a href="{{ pair.original.url }}">{{ pair.original.name }}
+                                <img src="{{ pair.original.url }}" alt="{{ pair.original.name }}">
+                                </a>
+                                <p>{{ pair.desc }}</p>
+                                <a href="{{ pair.result.url }}">{{ pair.result.name }}
+                                <img src="{{ pair.result.url }}" alt="{{ pair.result.name }}">
+                                </a>
+                                </li>
+                        {% endfor %}
+                        </ul>
+                {% else %}
+                        <p>No documents.</p>
+                {% endif %}
+
+                <!-- Upload form. Note enctype attribute! -->
+                <form action="{% url "list" %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <p>{{ form.non_field_errors }}</p>
+                        <p>{{ form.dataset }}</p>
+                        <p>{{ form.original.label_tag }} </p>
+                        <p>
+                                {{ form.docfile.errors }}
+                                {{ form.docfile }}
+                        </p>
+                        <p>{{ form.desc }}</p>
+                        <p><input type="submit" value="Upload" /></p>
+                </form>
+
+        </body>
+
+</html>
