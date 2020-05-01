@@ -12,45 +12,40 @@ from app import views
 def bird_model(original, text):
 	return original
 
+
 def fashion_model(original, text):
 	return original
 
-# def list(request):
-# # Handle file upload
-# 	if request.method == 'POST':
-# 		form = EditForm(request.POST, request.FILES)
-# 		if form.is_valid():
-# 			# Call your model here
-# 			num_id = Edit.objects.aggregate(Max('num_id')).get('num_id__max')
-# 			if num_id == None:
-# 				num_id = 1
-# 			else:
-# 				num_id += 1
-# 			dataset = request.POST['dataset']
-# 			desc = request.POST['desc']
-# 			original = request.FILES['original']
 
-# 			if dataset == 'bird':
-# 				result = bird_model(original, desc)
-# 			else:
-# 				result = fashion_model(original, desc)
-# 			new_edit = Edit(num_id = num_id, dataset = dataset, desc = desc, original = original, result = result)
-# 			new_edit.save()
+def transform(request):
+# Handle file upload
+	if request.method == 'POST':
+		form = EditForm(request.POST, request.FILES)
+		if form.is_valid():
+			# Call your model here
+			dataset = request.POST['dataset']
+			num_id = Edit.objects.filter(dataset = dataset).aggregate(Max('num_id')).get('num_id__max')
+			if num_id == None:
+				num_id = 1
+			else:
+				num_id += 1
+			desc = request.POST['desc']
+			original = request.FILES['original']
 
-# 			# Redirect to the document list after POST
-# 			return HttpResponseRedirect(reverse(views.list))
-# 	else:
-# 		form = EditForm() # A empty, unbound form
+			if dataset == 'bird':
+				result = bird_model(original, desc)
+			else:
+				result = fashion_model(original, desc)
+			new_edit = Edit(num_id = num_id, dataset = dataset, desc = desc, original = original, result = result)
+			new_edit.save()
 
-# 	# Load documents for the list page
-# 	pairs = Edit.objects.all()
+			# Redirect to the document list after POST
+			return HttpResponseRedirect(reverse(views.transform))
+	else:
+		form = EditForm() # A empty, unbound form
 
-# 	# Render list page with the documents and the form
-# 	return render(
-# 		request, 
-# 		'app/list.html',
-# 		{'pairs': pairs, 'form': form},
-# 	)
+	last_edit = Edit.objects.latest('id')
+	return render(request, 'app/form.html', {'last_edit': last_edit, 'form': form})
 
 
 def index(request):

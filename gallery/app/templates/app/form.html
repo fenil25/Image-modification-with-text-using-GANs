@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+        <head>
+                <meta charset="utf-8">
+                <title>Minimal Django File Upload Example</title>
+        </head>
+
+        <body>
+                <!-- Upload form. Note enctype attribute! -->
+                <form action="{% url 'transform' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <p>{{ form.dataset }}</p>
+                        <p>{{ form.non_field_errors }}</p>
+                        <p>{{ form.original.label_tag }} </p>
+                        <p>
+                                {{ form.original.errors }}
+                                {{ form.original }}
+                        </p>
+                        <p>{{ form.desc }}</p>
+                        <p><input type="submit" value="Upload" /></p>
+                </form>
+
+                {% if last_edit %}
+                        <ul>
+                                <li><a href="{{ last_edit.original.url }}">{{ last_edit.original.name }}
+                                <img src="{{ last_edit.original.url }}" alt="{{ last_edit.original.name }}">
+                                </a></li>
+                                <li>{{ last_edit.desc }}</li>
+                                <li><a href="{{ last_edit.result.url }}">{{ last_edit.result.name }}
+                                <img src="{{ last_edit.result.url }}" alt="{{ last_edit.result.name }}">
+                                </a></li>
+                        </ul>
+                {% else %}
+                        <p>No documents.</p>
+                {% endif %}
+        </body>
+
+</html>
