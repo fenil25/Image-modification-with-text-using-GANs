@@ -22,7 +22,6 @@ def transform(request):
 	if request.method == 'POST':
 		form = EditForm(request.POST, request.FILES)
 		if form.is_valid():
-			# Call your model here
 			dataset = request.POST['dataset']
 			num_id = Edit.objects.filter(dataset = dataset).aggregate(Max('num_id')).get('num_id__max')
 			if num_id == None:
