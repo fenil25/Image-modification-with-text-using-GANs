@@ -49,7 +49,7 @@ http://www.templatemo.com/tm-501-neaty
                                     <a href="/app/list/fashion" class="tm-nav-item-link">Fashion</a>
                                 </li>
                                 <li class="tm-nav-item">
-                                    <a href="/app/list/birds" class="tm-nav-item-link">Birds</a>
+                                    <a href="/app/list/bird" class="tm-nav-item-link">Birds</a>
                                 </li>
                             </ul>
                         </nav>                                         
@@ -82,7 +82,7 @@ http://www.templatemo.com/tm-501-neaty
                                 {% for pair in pairs %}
                                 <div class="tm-gallery-container tm-gallery-2">
                                     <div class="tm-img-container tm-img-container-2" style="text-align:center">
-                                        <a href="{{ pair.original.url }}">
+                                        <a href="{% url 'transform_old' id=pair.id side='original' %}">
                                             <img src="{{ pair.original.url }}" alt="{{ pair.original.name }}" class="img-fluid tm-img-tn">
                                         </a>
                                         <!-- <a href="img/neaty-08.jpg"><img src="{% static 'img/neaty-08.jpg' %}" alt="Image" class="img-fluid tm-img-tn"></a>     -->
@@ -91,7 +91,7 @@ http://www.templatemo.com/tm-501-neaty
                                         <p>{{ pair.desc }}</p>    
                                     </div>
                                     <div class="tm-img-container tm-img-container-2" style="text-align:center">
-                                        <a href="{{ pair.result.url }}">
+                                        <a href="{% url 'transform_old' id=pair.id side='result' %}">
                                             <img src="{{ pair.result.url }}" alt="{{ pair.result.name }}" class="img-fluid tm-img-tn">
                                         </a>
                                     </div>                                    

@@ -50,7 +50,7 @@
                                     <a href="/app/list/fashion" class="tm-nav-item-link">Fashion</a>
                                 </li>
                                 <li class="tm-nav-item">
-                                    <a href="/app/list/birds" class="tm-nav-item-link">Birds</a>
+                                    <a href="/app/list/bird" class="tm-nav-item-link">Birds</a>
                                 </li>
                             </ul>
                         </nav>                                         
@@ -109,6 +109,47 @@
                                                         </div>
 
                                                 </section>
+                                                                            <!-- Second Gallery section -->     
+                            <section id="secondgallery" class="tm-section">
+                                <header><h2 class="tm-blue-text tm-section-title tm-margin-b-30">Outputs</h2></header>
+                                {% if last_edit %}
+                                <div class="tm-img-container tm-img-container-2" style="text-align:center">
+                                        <strong>Input Image</strong>
+                                </div>
+                                <div class="tm-img-container tm-img-container-2" style="text-align:center">
+                                        <strong>Input Text</strong>
+                                </div>
+                                <div class="tm-img-container tm-img-container-2" style="text-align:center">
+                                        <strong>Output Image</strong>
+                                </div>
+                                
+                                <div class="tm-gallery-container tm-gallery-2">
+                                    <div class="tm-img-container tm-img-container-2" style="text-align:center">
+                                        <a href="{% url 'transform_old' id=last_edit.id side='original' %}">
+                                            <img src="{{ last_edit.original.url }}" alt="{{ last_edit.original.name }}" class="img-fluid tm-img-tn">
+                                        </a>
+                                        <!-- <a href="img/neaty-08.jpg"><img src="{% static 'img/neaty-08.jpg' %}" alt="Image" class="img-fluid tm-img-tn"></a>     -->
+                                    </div>
+                                    <div class="tm-img-container tm-img-container-2" style="text-align:center">
+                                        <p>{{ last_edit.desc }}</p>    
+                                    </div>
+                                    <div class="tm-img-container tm-img-container-2" style="text-align:center">
+                                        <a href="{% url 'transform_old' id=last_edit.id side='result' %}">
+                                            <img src="{{ last_edit.result.url }}" alt="{{ last_edit.result.name }}" class="img-fluid tm-img-tn">
+                                        </a>
+                                    </div>                                    
+                                </div>
+                                {% else %}
+                                <!-- <div class="tm-img-container tm-img-container-2"> -->
+                                <div style="text-align: center">
+                                        <p>No documents.</p>
+                                </div>
+                                <!-- </div> -->
+                                {% endif %}
+                                <div style="text-align: center">
+                                        <a href="/app/new" class="tm-button tm-button-wide">Upload a new image</a>
+                                </div> 
+                            </section>
                                                 <!-- <footer>
                                     <p class="tm-copyright-p">Copyright &copy; <span class="tm-current-year">2017</span> Your Company 
                                     

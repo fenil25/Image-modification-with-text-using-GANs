@@ -126,7 +126,7 @@ def transform(request):
 			if dataset == 'bird':
 				result = bird_model(original, desc)
 				new_edit.original.save(
-					new_edit.original.url,
+					os.path.basename(new_edit.original.url),
 					File(open("/home/parth/College/BE_Project/BEProj/gallery/app/bird_temp.jpg", 'rb'))
 				)
 			
@@ -134,7 +134,7 @@ def transform(request):
 				result = fashion_model(original, desc)
 			
 			new_edit.result.save(
-				new_edit.result.url,
+				os.path.basename(new_edit.result.url),
 				File(open("/home/parth/College/BE_Project/BEProj/gallery/app/temp.jpg", 'rb'))
 			)
 			new_edit.save()
@@ -171,17 +171,31 @@ def transform_old(request, id, side):
 			result = original
 			new_edit = Edit(num_id = num_id, dataset = dataset, desc = desc, original = original, result = result)
 			new_edit.save()
+			
 			if dataset == 'bird':
 				result = bird_model(original, desc)
+				new_edit.original.save(
+					os.path.basename(new_edit.original.url),
+					File(open("/home/parth/College/BE_Project/BEProj/gallery/app/bird_temp.jpg", 'rb'))
+				)
+			
 			else:
 				result = fashion_model(original, desc)
-			new_edit.result = result
+			
+			new_edit.result.save(
+				os.path.basename(new_edit.result.url),
+				File(open("/home/parth/College/BE_Project/BEProj/gallery/app/temp.jpg", 'rb'))
+			)
 			new_edit.save()
+			
 			print('Old edit saved')
 			return HttpResponseRedirect(reverse(views.transform))
 	else:
 		form = OldEditForm()
-		img = field_value
+		if side == 'result':
+			img = x.result.url
+		else:
+			img = x.original.url
 		return render(request, 'app/old_edit.html', {'old': img, 'form': form, 'id': id, 'side': side})
 
 
