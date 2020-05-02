@@ -10,12 +10,69 @@ from app.forms import EditForm, OldEditForm
 from app import views
 from gallery import settings
 
+# DL libraries
+import os
+from .tagan.model import Generator
+
+import torch
+import torchfile
+
+import torchvision.transforms as transforms
+from torchvision.utils import save_image
+from PIL import Image
+
+import fasttext
+import nltk
+from nltk.tokenize import RegexpTokenizer
+
+import matplotlib.pyplot as plt
+
+word_embedding = fasttext.load_model("wiki.en.bin")
+
+def split_sentence_into_words(sentence):
+	tokenizer = RegexpTokenizer(r'\w+')
+	return tokenizer.tokenize(sentence.lower())
+
+transform = transforms.Compose([
+	transforms.Resize(136),
+	transforms.CenterCrop(128),
+	transforms.ToTensor()
+])
+
+def _nums2chars(nums):
+	alphabet = "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:'\"/\\|_@#$%^&*~`+-=<>()[]{} "
+	chars = ''
+	for num in nums:
+		chars += alphabet[num - 1]
+	return chars
+
 def bird_model(original, text):
 	return original
 
 
 def fashion_model(original, text):
-	return original
+	print("Original:", original.path, "Text:", text)
+	G = Generator(fusing_method='lowrank_BP').to('cpu')
+	G.load_state_dict(torch.load("fashion_models/birds_G (11).pth"))
+	_ = G.eval()
+	img = Image.open(original.path)
+	img = transform(img)
+	img = img.unsqueeze(0)
+	img = img.mul(2).sub(1).to('cpu')
+
+	words = split_sentence_into_words(text)
+	txt = torch.tensor([word_embedding.get_word_vector(w) for w in words], device='cpu')
+	txt = txt.unsqueeze(1)
+	len_txt = torch.tensor([len(words)], dtype=torch.long, device='cpu')
+
+	output, _ = G(img, (txt, len_txt))
+	output = output.mul(0.5).add(0.5)
+
+	plt.imshow(img.add(1).div(2).to('cpu').numpy()[0].transpose(1,2,0))
+	plt.imshow(output.to('cpu').detach().numpy()[0].transpose(1,2,0))
+
+	return Image.fromarray(output)
+	# return original
 
 
 def transform(request):
@@ -32,12 +89,14 @@ def transform(request):
 				num_id += 1
 			desc = request.POST['desc']
 			original = request.FILES['original']
-
+			result = original
+			new_edit = Edit(num_id = num_id, dataset = dataset, desc = desc, original = original, result = result)
+			new_edit.save()
 			if dataset == 'bird':
 				result = bird_model(original, desc)
 			else:
 				result = fashion_model(original, desc)
-			new_edit = Edit(num_id = num_id, dataset = dataset, desc = desc, original = original, result = result)
+			new_edit.result = result
 			new_edit.save()
 
 			# Redirect to the document list after POST
@@ -69,11 +128,14 @@ def transform_old(request, id, side):
 				num_id += 1
 			desc = request.POST['desc']
 			original = field_value
+			result = original
+			new_edit = Edit(num_id = num_id, dataset = dataset, desc = desc, original = original, result = result)
+			new_edit.save()
 			if dataset == 'bird':
 				result = bird_model(original, desc)
 			else:
 				result = fashion_model(original, desc)
-			new_edit = Edit(num_id = num_id, dataset = dataset, desc = desc, original = original, result = result)
+			new_edit.result = result
 			new_edit.save()
 			print('Old edit saved')
 			return HttpResponseRedirect(reverse(views.transform))
