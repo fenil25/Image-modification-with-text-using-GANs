@@ -5,10 +5,14 @@ from django.urls import reverse
 
 from django.db.models import Max
 
+from django.core.files import File
+
 from app.models import Edit
 from app.forms import EditForm, OldEditForm
 from app import views
 from gallery import settings
+
+from .apps import AppConfig
 
 # DL libraries
 import os
@@ -27,13 +31,13 @@ from nltk.tokenize import RegexpTokenizer
 
 import matplotlib.pyplot as plt
 
-word_embedding = fasttext.load_model("wiki.en.bin")
+# word_embedding = fasttext.load_model("/home/parth/College/BE_Project/BEProj/gallery/app/wiki.en.bin")
 
 def split_sentence_into_words(sentence):
 	tokenizer = RegexpTokenizer(r'\w+')
 	return tokenizer.tokenize(sentence.lower())
 
-transform = transforms.Compose([
+transform_image = transforms.Compose([
 	transforms.Resize(136),
 	transforms.CenterCrop(128),
 	transforms.ToTensor()
@@ -47,31 +51,57 @@ def _nums2chars(nums):
 	return chars
 
 def bird_model(original, text):
-	return original
-
-
-def fashion_model(original, text):
-	print("Original:", original.path, "Text:", text)
-	G = Generator(fusing_method='lowrank_BP').to('cpu')
-	G.load_state_dict(torch.load("fashion_models/birds_G (11).pth"))
+	device = torch.device('cpu')
+	print("Original:", original, "Text:", text)
+	G = Generator(fusing_method='lowrank_BP').to(device)
+	G.load_state_dict(AppConfig.birds_model)
 	_ = G.eval()
-	img = Image.open(original.path)
-	img = transform(img)
+	img = Image.open(original)
+	img = transform_image(img)
 	img = img.unsqueeze(0)
 	img = img.mul(2).sub(1).to('cpu')
-
+	
 	words = split_sentence_into_words(text)
-	txt = torch.tensor([word_embedding.get_word_vector(w) for w in words], device='cpu')
+	txt = torch.tensor([AppConfig.word_embedding.get_word_vector(w) for w in words], device='cpu')
 	txt = txt.unsqueeze(1)
 	len_txt = torch.tensor([len(words)], dtype=torch.long, device='cpu')
 
 	output, _ = G(img, (txt, len_txt))
 	output = output.mul(0.5).add(0.5)
 
-	plt.imshow(img.add(1).div(2).to('cpu').numpy()[0].transpose(1,2,0))
-	plt.imshow(output.to('cpu').detach().numpy()[0].transpose(1,2,0))
+	# plt.imshow(img.add(1).div(2).to('cpu').numpy()[0].transpose(1,2,0))
+	# plt.imshow(output.to('cpu').detach().numpy()[0].transpose(1,2,0))
+	# output = output.to('cpu').detach().numpy()[0].transpose(1, 2, 0)
+	# temp = transforms.ToPILImage()
+	save_image(img.add(1).div(2), "/home/parth/College/BE_Project/BEProj/gallery/app/bird_temp.jpg")
+	save_image(output, "/home/parth/College/BE_Project/BEProj/gallery/app/temp.jpg")
+	return None
 
-	return Image.fromarray(output)
+def fashion_model(original, text):
+	device = torch.device('cpu')
+	print("Original:", original, "Text:", text)
+	G = Generator(fusing_method='lowrank_BP').to(device)
+	G.load_state_dict(AppConfig.fashion_model)
+	_ = G.eval()
+	img = Image.open(original)
+	img = transform_image(img)
+	img = img.unsqueeze(0)
+	img = img.mul(2).sub(1).to('cpu')
+
+	words = split_sentence_into_words(text)
+	txt = torch.tensor([AppConfig.word_embedding.get_word_vector(w) for w in words], device='cpu')
+	txt = txt.unsqueeze(1)
+	len_txt = torch.tensor([len(words)], dtype=torch.long, device='cpu')
+
+	output, _ = G(img, (txt, len_txt))
+	output = output.mul(0.5).add(0.5)
+
+	# plt.imshow(img.add(1).div(2).to('cpu').numpy()[0].transpose(1,2,0))
+	# plt.imshow(output.to('cpu').detach().numpy()[0].transpose(1,2,0))
+	# output = output.to('cpu').detach().numpy()[0].transpose(1, 2, 0)
+	# temp = transforms.ToPILImage()
+	save_image(output, "/home/parth/College/BE_Project/BEProj/gallery/app/temp.jpg")
+	return None
 	# return original
 
 
@@ -92,11 +122,21 @@ def transform(request):
 			result = original
 			new_edit = Edit(num_id = num_id, dataset = dataset, desc = desc, original = original, result = result)
 			new_edit.save()
+			
 			if dataset == 'bird':
 				result = bird_model(original, desc)
+				new_edit.original.save(
+					new_edit.original.url,
+					File(open("/home/parth/College/BE_Project/BEProj/gallery/app/bird_temp.jpg", 'rb'))
+				)
+			
 			else:
 				result = fashion_model(original, desc)
-			new_edit.result = result
+			
+			new_edit.result.save(
+				new_edit.result.url,
+				File(open("/home/parth/College/BE_Project/BEProj/gallery/app/temp.jpg", 'rb'))
+			)
 			new_edit.save()
 
 			# Redirect to the document list after POST
