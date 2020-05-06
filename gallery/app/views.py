@@ -7,6 +7,8 @@ from django.db.models import Max
 
 from django.core.files import File
 
+from django.core.files.base import ContentFile
+
 from app.models import Edit
 from app.forms import EditForm, OldEditForm
 from app import views
@@ -167,10 +169,24 @@ def transform_old(request, id, side):
 			else:
 				num_id += 1
 			desc = request.POST['desc']
+
+			new_edit = Edit(num_id = num_id, dataset = dataset, desc = desc)
+
+			if side == 'original':
+				picture_copy = ContentFile(x.original.read())
+				picture_copy.name = x.original.name.split("/")[-1]
+				new_edit.original = picture_copy
+				new_edit.result = picture_copy
+			
+				new_edit.save()
+			else:
+				picture_copy = ContentFile(x.result.read())
+				picture_copy.name = x.result.name.split("/")[-1]
+				new_edit.original = picture_copy
+				new_edit.result = picture_copy
+				new_edit.save()
+
 			original = field_value
-			result = original
-			new_edit = Edit(num_id = num_id, dataset = dataset, desc = desc, original = original, result = result)
-			new_edit.save()
 			
 			if dataset == 'bird':
 				result = bird_model(original, desc)
